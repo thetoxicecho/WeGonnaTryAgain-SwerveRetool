@@ -4,16 +4,18 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.apriltag.AprilTagDetector.Config;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.SwerveModule;
 
 public class Swerve extends SubsystemBase {
   /** Creates a new ExampleSubsystem. */
-  SwerveModule m_frontLeft = new SwerveModule(0, 2, 5, 4, 0);
-  SwerveModule m_frontRight = new SwerveModule(1, 0, 1, 0, 0);
-  SwerveModule m_backLeft = new SwerveModule(2, 1, 3, 6, 0);
-  SwerveModule m_backRight = new SwerveModule(3, 3, 7, 2, 0);
+  SwerveModule m_frontLeft = new SwerveModule(Constants.s_frontLeft);
+  SwerveModule m_frontRight = new SwerveModule(Constants.s_frontRight);
+  SwerveModule m_backLeft = new SwerveModule(Constants.s_backLeft);
+  SwerveModule m_backRight = new SwerveModule(Constants.s_backRight);
   
   public Swerve() {
   }
@@ -27,11 +29,18 @@ public class Swerve extends SubsystemBase {
 
   }
 
-  public void PIDLoop(double targetAngle) {
-    m_frontLeft.moveToTargetAngle(targetAngle);
-    m_frontRight.moveToTargetAngle(targetAngle);
-    m_backLeft.moveToTargetAngle(targetAngle);
-    m_backRight.moveToTargetAngle(targetAngle);  
+  public void PIDLoop() {
+    m_frontLeft.moveToTargetAngle();
+    m_frontRight.moveToTargetAngle();
+    m_backLeft.moveToTargetAngle();
+    m_backRight.moveToTargetAngle();  
+  }
+
+  public void setModuleAngles(double targetAngle) {
+    m_frontLeft.setTargetAngle(targetAngle);
+    m_frontRight.setTargetAngle(targetAngle);
+    m_backLeft.setTargetAngle(targetAngle);
+    m_backRight.setTargetAngle(targetAngle);
   }
 
   public void percentZero() {
