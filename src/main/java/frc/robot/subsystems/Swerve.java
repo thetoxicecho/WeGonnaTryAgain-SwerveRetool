@@ -40,15 +40,9 @@ public class Swerve extends SubsystemBase {
     swerveOdometry = new SwerveDriveOdometry(Constants.swerveKinematics, getYaw(), getModulePositions());
   }
 
-  public void debugSwerve() {
-    for (var module : swerveModules) {
-      module.debug();
-    }
-  }
-
   public void drive(Translation2d translation, double rotation, boolean fieldRelative) {
     SwerveModuleState[] swerveModuleStates = Constants.swerveKinematics.toSwerveModuleStates(
-        true ? ChassisSpeeds.fromFieldRelativeSpeeds(
+        fieldRelative ? ChassisSpeeds.fromFieldRelativeSpeeds(
             translation.getX(),
             translation.getY(),
             rotation,
@@ -116,6 +110,8 @@ public class Swerve extends SubsystemBase {
   @Override
   public void periodic() {
     swerveOdometry.update(getYaw(), getModulePositions());
-
+    for (SwerveModule module : swerveModules) {
+      module.debug();
+    }
   }
 }

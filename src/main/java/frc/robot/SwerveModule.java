@@ -1,14 +1,11 @@
 package frc.robot;
 
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.sensors.AbsoluteSensorRange;
@@ -26,12 +23,7 @@ public class SwerveModule {
 
   // module variables
   private double targetAngle;
-  private boolean inverted;
-  private double kNorm;
   private Rotation2d lastAngle;
-
-  // kinematic controllers
-  private PIDController controller;
 
   // Construct a new Swerve Module using a preset Configuration
   public SwerveModule(Constants.SwerveModuleConfigurations configs) {
@@ -66,10 +58,10 @@ public class SwerveModule {
     this.driveMotor.config_kD(0, Constants.driveKD);
     this.driveMotor.config_kF(0, Constants.driveKF);
 
-    this.controller = new PIDController(configs.kP, configs.kI, configs.kD);
-    this.kNorm = configs.kNorm;
+    // this.controller = new PIDController(configs.kP, configs.kI, configs.kD);
+    // this.kNorm = configs.kNorm;
 
-    this.inverted = false;
+    // this.inverted = false;
 
     targetAngle = 0;
     // lastAngle = getState().angle;
