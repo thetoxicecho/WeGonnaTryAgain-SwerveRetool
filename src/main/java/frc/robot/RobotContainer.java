@@ -39,12 +39,10 @@ public class RobotContainer {
         () -> leftStick.getX(),
         () -> rightStick.getX(),
         () -> leftStickButtonTwo.getAsBoolean()));
-    rightTrigger.onTrue(new InstantCommand(() -> swerveSubsystem.setModuleAngles(0)));
-
   }
 
   public void initializeDriveTrain() {
-    // swerveSubsystem.resetAllModulesToAbsolute();
+    swerveSubsystem.resetIntegratedToAbsolute();
   }
 
   public Command getAutonomousCommand() {

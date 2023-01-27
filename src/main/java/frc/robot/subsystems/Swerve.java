@@ -48,7 +48,7 @@ public class Swerve extends SubsystemBase {
 
   public void drive(Translation2d translation, double rotation, boolean fieldRelative) {
     SwerveModuleState[] swerveModuleStates = Constants.swerveKinematics.toSwerveModuleStates(
-        false ? ChassisSpeeds.fromFieldRelativeSpeeds(
+        true ? ChassisSpeeds.fromFieldRelativeSpeeds(
             translation.getX(),
             translation.getY(),
             rotation,
@@ -107,16 +107,15 @@ public class Swerve extends SubsystemBase {
     return Rotation2d.fromDegrees(gyro.getYaw());
   }
 
+  public void resetIntegratedToAbsolute() {
+    for (SwerveModule mod : swerveModules) {
+      mod.resetAngleToAbsolute();
+    }
+  }
+
   @Override
   public void periodic() {
     swerveOdometry.update(getYaw(), getModulePositions());
 
-  }
-
-  public void setModuleAngles(double angle) {
-    for (SwerveModule mod : swerveModules) {
-      mod.setTargetAngle(0);
-      mod.moveToTargetAngle();
-    }
   }
 }

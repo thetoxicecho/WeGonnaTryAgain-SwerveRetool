@@ -32,7 +32,6 @@ public class SwerveModule {
 
   // kinematic controllers
   private PIDController controller;
-  private SimpleMotorFeedforward driveFeedForward;
 
   // Construct a new Swerve Module using a preset Configuration
   public SwerveModule(Constants.SwerveModuleConfigurations configs) {
@@ -52,6 +51,10 @@ public class SwerveModule {
     // Angle Motor Config
     this.angleMotor = new TalonFX(configs.angleMotorId);
     this.angleMotor.setNeutralMode(NeutralMode.Coast);
+    this.angleMotor.config_kP(0, 0.2);
+    this.angleMotor.config_kI(0, 0);
+    this.angleMotor.config_kD(0, 0);
+    this.angleMotor.config_kF(0, 0);
 
     // Drive Motor Config
     this.driveMotor = new TalonFX(configs.driveMotorId);
@@ -64,8 +67,6 @@ public class SwerveModule {
     this.driveMotor.config_kF(0, Constants.driveKF);
 
     this.controller = new PIDController(configs.kP, configs.kI, configs.kD);
-    this.controller.setIntegratorRange(-0.3d, 0.3d);
-    this.driveFeedForward = new SimpleMotorFeedforward(1.0d, configs.kF);
     this.kNorm = configs.kNorm;
 
     this.inverted = false;
@@ -75,45 +76,16 @@ public class SwerveModule {
     lastAngle = Rotation2d.fromDegrees(targetAngle);
   }
 
+  public void resetAngleToAbsolute() {
+    double falconAngle = Utils.degreesToFalcon(angleEncoder.getAbsolutePosition(), Constants.angleGearRatio);
+    angleMotor.setSelectedSensorPosition(falconAngle);
+  }
+
   // Debug swerve module information to SmartDashboard
   public void debug() {
     SmartDashboard.putNumber(moduleNumber + " CANCoder", angleEncoder.getAbsolutePosition());
-    SmartDashboard.putBoolean(moduleNumber + " Inverted", inverted);
-    double kP = Utils.serializeNumber(moduleNumber + " P", controller.getP());
-    double kI = Utils.serializeNumber(moduleNumber + " I", controller.getI());
-    double kD = Utils.serializeNumber(moduleNumber + " D", controller.getD());
-    kNorm = Utils.serializeNumber(moduleNumber + " Norm", kNorm);
-    controller.setP(kP);
-    controller.setI(kI);
-    controller.setD(kD);
-  }
-
-  // Sets the current target angle of the swerve module
-  public void setTargetAngle(double targetAngle) {
-    this.targetAngle = targetAngle;
-  }
-
-  public void moveToTargetAngle() {
-    // returns motor angle between [0, 360]
-    double currentAngle = angleEncoder.getAbsolutePosition();
-
-    double delta = targetAngle - currentAngle;
-
-    if (delta > 180) {
-      delta -= 360;
-    } else if (delta < -180) {
-      delta += 360;
-    }
-    if (delta > 90) {
-      delta -= 180;
-    } else if (delta < -90) {
-      delta += 180;
-    }
-
-    inverted = Math.abs(targetAngle - currentAngle) > 90;
-
-    double output = controller.calculate(0, delta);
-    angleMotor.set(ControlMode.PercentOutput, output / kNorm);
+    SmartDashboard.putNumber(moduleNumber + " Integrated",
+        Utils.falconToDegrees(angleMotor.getSelectedSensorPosition(), Constants.angleGearRatio));
   }
 
   public Rotation2d getCanCoder() {
@@ -148,27 +120,11 @@ public class SwerveModule {
     Rotation2d angle = (Math.abs(desiredState.speedMetersPerSecond) <= (Constants.maxSpeed * 0.01)) ? lastAngle
         : desiredState.angle; // Prevent rotating module if speed is less then 1%. Prevents Jittering.
 
-    setTargetAngle(angle.getDegrees());
-    moveToTargetAngle();
+    double falconUnits = Utils.degreesToFalcon(angle.getDegrees(), Constants.angleGearRatio);
+    angleMotor.set(ControlMode.Position, falconUnits);
     // driveMotor.set(ControlMode.Position,
-    // Utils.degreesToFalcon(angle.getDegrees(), Constants.angleGearRatio));
     lastAngle = angle;
-    /*
-     * if(isOpenLoop){
-     * double percentOutput = desiredState.speedMetersPerSecond /
-     * Constants.maxSpeed;
-     * driveMotor.set(ControlMode.PercentOutput, percentOutput);
-     * }
-     */
-    /*
-     * else {
-     * double velocity = Utils.MPSToFalcon(desiredState.speedMetersPerSecond,
-     * Constants.wheelCircumference, Constants.driveGearRatio);
-     * driveMotor.set(ControlMode.Velocity, velocity,
-     * DemandType.ArbitraryFeedForward,
-     * driveFeedForward.calculate(desiredState.speedMetersPerSecond));
-     * }
-     */
+
     double percentOutput = desiredState.speedMetersPerSecond / Constants.maxSpeed;
     driveMotor.set(ControlMode.PercentOutput, percentOutput);
   }
